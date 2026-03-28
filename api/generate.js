@@ -12,40 +12,35 @@ export default async function handler(req) {
   }
 
   try {
-    const body = await req.formData();
-    const model = body.get('model') || 'core';
+    const body = await req.json();
+    const prompt = body.prompt || '';
+    const negPrompt = body.negative_prompt || 'blurry, bad quality, distorted, ugly';
 
-    let endpoint = '';
-    if (model === 'core') endpoint = 'https://api.stability.ai/v2beta/stable-image/generate/core';
-    else if (model === 'ultra') endpoint = 'https://api.stability.ai/v2beta/stable-image/generate/ultra';
-    else endpoint = 'https://api.stability.ai/v2beta/stable-image/generate/sd3';
-
-    const formData = new FormData();
-    for (const [key, value] of body.entries()) {
-      if (key !== 'model') formData.append(key, value);
-    }
-    if (model === 'sd3') formData.append('model', 'sd3.5-large-turbo');
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.STABILITY_KEY}`,
-        'Accept': 'image/*',
-      },
-      body: formData,
-    });
+    const response = await fetch(
+      'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-dev',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.HF_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            negative_prompt: negPrompt,
+            num_inference_steps: 30,
+            guidance_scale: 7.5,
+            width: 1024,
+            height: 1024,
+          }
+        }),
+      }
+    );
 
     if (!response.ok) {
-      let errMsg = `Error ${response.status}`;
-      try {
-        const errData = await response.json();
-        if (errData.errors) errMsg = errData.errors.join(', ');
-        else if (errData.message) errMsg = errData.message;
-        if (response.status === 401) errMsg = 'API Key غير صحيح';
-        if (response.status === 402) errMsg = 'رصيد غير كافٍ';
-        if (response.status === 422) errMsg = 'محتوى غير مسموح به';
-        if (response.status === 429) errMsg = 'انتظر قليلاً';
-      } catch {}
+      let errMsg = `خطأ ${response.status}`;
+      if (response.status === 503) errMsg = 'النموذج يحمّل، انتظر 20 ثانية وحاول مجدداً';
+      if (response.status === 429) errMsg = 'طلبات كثيرة، انتظر قليلاً';
       return new Response(JSON.stringify({ error: errMsg }), {
         status: response.status,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -53,12 +48,10 @@ export default async function handler(req) {
     }
 
     const imageBuffer = await response.arrayBuffer();
-    const contentType = response.headers.get('content-type') || 'image/png';
-
     return new Response(imageBuffer, {
       status: 200,
       headers: {
-        'Content-Type': contentType,
+        'Content-Type': 'image/jpeg',
         'Access-Control-Allow-Origin': '*',
         'Cache-Control': 'no-cache',
       },
@@ -69,4 +62,3 @@ export default async function handler(req) {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
     });
   }
-}
