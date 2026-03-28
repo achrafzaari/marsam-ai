@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مرسام AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#080810;--card:#13131f;--border:rgba(120,100,255,0.18);--accent:#7c5cfc;--accent2:#fc5c8a;--gold:#f0c040;--text:#e8e8f0;--muted:#6a6a8a;--glow:rgba(124,92,252,0.25)}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 70% 50% at 15% 10%,rgba(124,92,252,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 85% 90%,rgba(252,92,138,0.08) 0%,transparent 50%)}
+header{position:sticky;top:0;z-index:10;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(8,8,16,0.85);backdrop-filter:blur(20px)}
+.logo{font-family:'Tajawal',sans-serif;font-size:1.4rem;font-weight:900}.logo span{color:var(--accent)}
+.powered{background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.25);color:var(--accent);padding:4px 12px;border-radius:20px;font-size:0.72rem;font-weight:700}
+.main{position:relative;z-index:5;max-width:900px;margin:0 auto;padding:32px 20px 80px}
+.hero{text-align:center;padding:40px 0 44px}
+.hero h1{font-family:'Tajawal',sans-serif;font-size:clamp(1.8rem,5vw,2.8rem);font-weight:900;line-height:1.2;margin-bottom:12px}
+.grad{background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--muted);font-size:0.95rem;line-height:1.7}
+.quick-title{font-size:0.7rem;color:var(--muted);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+.quick-list{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.quick-item{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:6px 12px;font-size:0.78rem;cursor:pointer;transition:all 0.2s;color:var(--muted)}
+.quick-item:hover{border-color:var(--accent);color:var(--text);background:rgba(124,92,252,0.08)}
+.box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px;position:relative;overflow:hidden}
+.box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--gold))}
+.lbl{font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.lbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.prompt-wrap{position:relative;margin-bottom:16px}
+.prompt-wrap textarea{width:100%;background:rgba(255,255,255,0.04);border:1.5px solid rgba(255,255,255,0.08);border-radius:14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.95rem;line-height:1.7;padding:16px 16px 48px;resize:none;min-height:110px;outline:none;transition:border-color 0.3s,box-shadow 0.3s;direction:rtl}
+.prompt-wrap textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--glow)}
+.prompt-wrap textarea::placeholder{color:var(--muted)}
+.p-actions{position:absolute;bottom:12px;left:12px;display:flex;gap:6px}
+.p-btn{background:rgba(124,92,252,0.12);border:1px solid rgba(124,92,252,0.25);color:var(--accent);padding:4px 10px;border-radius:7px;font-family:'Cairo',sans-serif;font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.2s}
+.p-btn:hover{background:rgba(124,92,252,0.22)}
+.p-btn.m{color:var(--muted);background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.08)}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:18px}
+.chip{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap}
+.chip:hover{color:var(--text);border-color:var(--accent);background:rgba(124,92,252,0.1)}
+.chip.active{background:linear-gradient(135deg,rgba(124,92,252,0.25),rgba(252,92,138,0.15));border-color:var(--accent);color:var(--text)}
+.ctrls{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.cg label{display:block;font-size:0.67rem;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+.sel{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:9px;color:var(--text);font-family:'Cairo',sans-serif;font-size:0.85rem;padding:9px 12px;outline:none;transition:border-color 0.2s;appearance:none;cursor:pointer}
+.sel:focus{border-color:var(--accent)}
+.sel option{background:#1a1a2e}
+.gen-btn{width:100%;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:13px;padding:15px;font-family:'Tajawal',sans-serif;font-size:1.05rem;font-weight:900;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px}
+.gen-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(124,92,252,0.45)}
+.gen-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+.spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.err{background:rgba(252,92,138,0.1);border:1px solid rgba(252,92,138,0.35);color:#fc8aab;border-radius:10px;padding:12px 16px;font-size:0.85rem;margin-top:12px;display:none;line-height:1.6}
+.err.show{display:block}
+.results{display:none;animation:fadeIn 0.5s ease}
+.results.show{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.rh{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.rt{font-family:'Tajawal',sans-serif;font-size:1.1rem;font-weight:700}
+.clr{background:transparent;border:1px solid var(--border);color:var(--muted);padding:5px 14px;border-radius:7px;font-family:'Cairo',sans-serif;font-size:0.78rem;cursor:pointer;transition:all 0.2s}
+.clr:hover{border-color:var(--accent2);color:var(--accent2)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.icard{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;animation:cardIn 0.5s ease forwards;transition:transform 0.3s,box-shadow 0.3s}
+.icard:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.4)}
+@keyframes cardIn{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}}
+.iwrap{position:relative;overflow:hidden;background:#0a0a14}
+.iwrap img{width:100%;display:block;aspect-ratio:1;object-fit:cover;transition:transform 0.4s}
+.icard:hover .iwrap img{transform:scale(1.04)}
+.iov{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,8,16,0.85) 0%,transparent 50%);opacity:0;transition:opacity 0.3s;display:flex;align-items:flex-end;padding:12px;gap:7px}
+.icard:hover .iov{opacity:1}
+.ob{flex:1;background:rgba(255,255,255,0.12);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.2);color:#fff;border-radius:7px;padding:7px;font-family:'Cairo',sans-serif;font-size:0.75rem;font-weight:600;cursor:pointer;transition:all 0.2s;text-align:center}
+.ob:hover{background:rgba(255,255,255,0.22)}
+.ob.dl{background:linear-gradient(135deg,rgba(124,92,252,0.5),rgba(252,92,138,0.5));border-color:rgba(124,92,252,0.4)}
+.imeta{padding:10px 14px 12px}
+.ipt{font-size:0.75rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ibadge{display:inline-block;margin-top:7px;background:rgba(124,92,252,0.1);border:1px solid rgba(124,92,252,0.2);color:var(--accent);font-size:0.62rem;font-weight:700;padding:2px 7px;border-radius:5px}
+.lcard{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.shimmer{width:100%;aspect-ratio:1;background:linear-gradient(90deg,rgba(255,255,255,0.03) 0%,rgba(124,92,252,0.08) 40%,rgba(252,92,138,0.05) 60%,rgba(255,255,255,0.03) 100%);background-size:300% 100%;animation:sh 2s infinite linear}
+@keyframes sh{0%{background-position:300% 0}100%{background-position:-100% 0}}
+.stext{padding:12px 14px;display:flex;align-items:center;gap:8px;font-size:0.8rem;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(8px)}
+.modal.hidden{display:none}
+.mimg{max-width:90vw;max-height:90vh;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,0.7)}
+.mclose{position:absolute;top:18px;left:18px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:white;width:38px;height:38px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+footer{position:relative;z-index:5;text-align:center;padding:24px;color:var(--muted);font-size:0.75rem;border-top:1px solid var(--border)}
+footer strong{color:var(--accent)}
+@media(max-width:600px){header{padding:12px 16px}.main{padding:20px 14px 60px}.box{padding:18px 14px}}
+</style>
+</head>
+<body>
+<div class="modal hidden" id="modal" onclick="closeModal()">
+  <button class="mclose" onclick="closeModal()">✕</button>
+  <img class="mimg" id="mimg" src="" alt="">
+</div>
+<header>
+  <div class="logo">م<span>ر</span>سام <span style="color:var(--accent2)">AI</span></div>
+  <div class="powered">✦ Stable Diffusion</div>
+</header>
+<div class="main">
+  <div class="hero">
+    <h1>حوّل <span class="grad">أفكارك</span><br>إلى صور مذهلة</h1>
+    <p>اكتب وصف ما تتخيله وسيحوله Stability AI إلى صورة احترافية</p>
+  </div>
+  <div class="quick-title">✦ أمثلة سريعة</div>
+  <div class="quick-list">
+    <div class="quick-item" onclick="useQ(this)">قصر عربي خيالي فوق السحاب عند الغروب</div>
+    <div class="quick-item" onclick="useQ(this)">فضاء كوني مع نجوم ومجرات ملونة</div>
+    <div class="quick-item" onclick="useQ(this)">مدينة مستقبلية سايبربانك ليلاً</div>
+    <div class="quick-item" onclick="useQ(this)">أسد ملكي بأسلوب فن رقمي احترافي</div>
+    <div class="quick-item" onclick="useQ(this)">غروب الشمس على الصحراء العربية</div>
+  </div>
+  <div class="box">
+    <div class="lbl">✦ مولّد الصور</div>
+    <div class="prompt-wrap">
+      <textarea id="prompt" placeholder="صف الصورة التي تريدها بالتفصيل..." rows="4"></textarea>
+      <div class="p-actions">
+        <button class="p-btn" onclick="enhance()">✨ تحسين</button>
+        <button class="p-btn m" onclick="document.getElementById('prompt').value=''">مسح</button>
+      </div>
+    </div>
+    <div class="lbl">الأسلوب الفني</div>
+    <div class="chips" id="chips">
+      <div class="chip active" data-s="">افتراضي</div>
+      <div class="chip" data-s="photorealistic, 8k ultra detailed, DSLR photo">فوتوغرافي</div>
+      <div class="chip" data-s="digital art, highly detailed, artstation trending">فن رقمي</div>
+      <div class="chip" data-s="cinematic, film grain, dramatic lighting">سينمائي</div>
+      <div class="chip" data-s="oil painting, fine art, masterpiece">لوحة زيتية</div>
+      <div class="chip" data-s="anime style, cel shading, vibrant colors">أنيمي</div>
+      <div class="chip" data-s="watercolor painting, soft colors, artistic">ألوان مائية</div>
+      <div class="chip" data-s="3d render, octane render, volumetric lighting">ثلاثي الأبعاد</div>
+      <div class="chip" data-s="fantasy art, magical atmosphere, ethereal">فنتازي</div>
+    </div>
+    <div class="lbl">الإعدادات</div>
+    <div class="ctrls">
+      <div class="cg"><label>النموذج</label>
+        <select class="sel" id="model">
+          <option value="core">Stable Image Core ⚡</option>
+          <option value="ultra">Stable Image Ultra ✦</option>
+          <option value="sd3">Stable Diffusion 3.5</option>
+        </select>
+      </div>
+      <div class="cg"><label>نسبة الصورة</label>
+        <select class="sel" id="aspect">
+          <option value="1:1">مربع 1:1</option>
+          <option value="16:9">أفقي 16:9</option>
+          <option value="9:16">عمودي 9:16</option>
+          <option value="4:3">4:3</option>
+          <option value="21:9">سينمائي 21:9</option>
+        </select>
+      </div>
+      <div class="cg"><label>عدد الصور</label>
+        <select class="sel" id="num">
+          <option value="1">1 صورة</option>
+          <option value="2">2 صور</option>
+          <option value="4">4 صور</option>
+        </select>
+      </div>
+      <div class="cg"><label>الصيغة</label>
+        <select class="sel" id="fmt">
+          <option value="png">PNG</option>
+          <option value="jpeg">JPEG</option>
+          <option value="webp">WebP</option>
+        </select>
+      </div>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generate()">
+      <span id="bicon">✦</span><span id="btxt">إنشاء الصورة الآن</span>
+    </button>
+    <div class="err" id="err"></div>
+  </div>
+  <div class="results" id="results">
+    <div class="rh">
+      <div class="rt">✦ الصور المنشأة</div>
+      <button class="clr" onclick="clearR()">مسح الكل</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+<footer>مرسام AI · <strong>Stability AI</strong> · جميع الصور مملوكة لك</footer>
+<script>
+let style='',gen=false;
+document.querySelectorAll('.chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); style=c.dataset.s||'';
+  });
+});
+function useQ(el){document.getElementById('prompt').value=el.textContent;}
+function showErr(m){const e=document.getElementById('err');e.textContent=m;e.classList.add('show');}
+function hideErr(){document.getElementById('err').classList.remove('show');}
+function clearR(){document.getElementById('grid').innerHTML='';document.getElementById('results').classList.remove('show');}
+function openModal(s){document.getElementById('mimg').src=s;document.getElementById('modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+function enhance(){
+  const t=document.getElementById('prompt');
+  if(!t.value.trim())return;
+  const o=[', 8K ultra detailed, masterpiece',', cinematic lighting, highly detailed',', professional quality, stunning',', vivid colors, sharp focus'];
+  t.value=t.value.trim()+o[Math.floor(Math.random()*o.length)];
+}
+async function generate(){
+  if(gen)return; hideErr();
+  const p=document.getElementById('prompt').value.trim();
+  if(!p){showErr('⚠️ أدخل وصف الصورة أولاً');return;}
+  const model=document.getElementById('model').value;
+  const aspect=document.getElementById('aspect').value;
+  const count=parseInt(document.getElementById('num').value);
+  const fmt=document.getElementById('fmt').value;
+  const fp=style?`${p}, ${style}`:p;
+  gen=true;
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;
+  document.getElementById('bicon').innerHTML='<div class="spinner"></div>';
+  document.getElementById('btxt').textContent='جاري الإنشاء...';
+  document.getElementById('results').classList.add('show');
+  const grid=document.getElementById('grid');
+  const ids=[];
+  for(let i=0;i<count;i++){
+    const id='l'+Date.now()+'_'+i; ids.push(id);
+    const lc=document.createElement('div');
+    lc.className='lcard'; lc.id=id;
+    lc.innerHTML=`<div class="shimmer"></div><div class="stext"><div class="spinner" style="border-top-color:var(--accent)"></div><span>ينشئ الصورة ${i+1} من ${count}...</span></div>`;
+    grid.insertBefore(lc,grid.firstChild);
+  }
+  let ok=0;
+  for(let i=0;i<count;i++){
+    try{
+      const fd=new FormData();
+      fd.append('prompt',fp); fd.append('aspect_ratio',aspect);
+      fd.append('output_format',fmt); fd.append('model',model);
+      const r=await fetch('/api/generate',{method:'POST',body:fd});
+      if(!r.ok){let m=`خطأ ${r.status}`;try{const j=await r.json();if(j.error)m=j.error;}catch{}throw new Error(m);}
+      const blob=await r.blob();
+      const url=URL.createObjectURL(blob);
+      const card=document.createElement('div'); card.className='icard';
+      const ml=model==='core'?'Stable Image Core':model==='ultra'?'Stable Image Ultra':'SD 3.5 Turbo';
+      const fn=`marsam_${Date.now()}.${fmt}`;
+      card.innerHTML=`<div class="iwrap"><img src="${url}" alt="" loading="lazy"><div class="iov"><button class="ob" onclick="openModal('${url}')">🔍 تكبير</button><button class="ob dl" onclick="dl('${url}','${fn}')">⬇ تحميل</button></div></div><div class="imeta"><div class="ipt">${fp}</div><div class="ibadge">${ml}</div></div>`;
+      const le=document.getElementById(ids[i]); if(le)le.replaceWith(card); ok++;
+    }catch(e){
+      const le=document.getElementById(ids[i]);
+      if(le)le.innerHTML=`<div style="aspect-ratio:1;background:rgba(252,92,138,0.06);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px;text-align:center"><div style="font-size:2rem">⚠️</div><div style="color:var(--accent2);font-size:0.82rem">${e.message}</div></div>`;
+    }
+  }
+  if(ok===0)showErr('فشل إنشاء الصور. تحقق من الـ API Key في Vercel.');
+  gen=false; btn.disabled=false;
+  document.getElementById('bicon').textContent='✦';
+  document.getElementById('btxt').textContent='إنشاء الصورة الآن';
+}
+function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.key==='Enter'&&e.ctrlKey)generate();});
+</script>
+</body>
+</html>    <div class="lbl">✦ مولّد الصور</div>
+    <div class="prompt-wrap">
+      <textarea id="prompt" placeholder="صف الصورة التي تريدها بالتفصيل..." rows="4"></textarea>
+      <div class="p-actions">
+        <button class="p-btn" onclick="enhance()">✨ تحسين</button>
+        <button class="p-btn m" onclick="document.getElementById('prompt').value=''">مسح</button>
+      </div>
+    </div>
+    <div class="lbl">الأسلوب الفني</div>
+    <div class="chips" id="chips">
+      <div class="chip active" data-s="">افتراضي</div>
+      <div class="chip" data-s="photorealistic, 8k ultra detailed, DSLR photo">فوتوغرافي</div>
+      <div class="chip" data-s="digital art, highly detailed, artstation trending">فن رقمي</div>
+      <div class="chip" data-s="cinematic, film grain, dramatic lighting">سينمائي</div>
+      <div class="chip" data-s="oil painting, fine art, masterpiece">لوحة زيتية</div>
+      <div class="chip" data-s="anime style, cel shading, vibrant colors">أنيمي</div>
+      <div class="chip" data-s="watercolor painting, soft colors, artistic">ألوان مائية</div>
+      <div class="chip" data-s="3d render, octane render, volumetric lighting">ثلاثي الأبعاد</div>
+      <div class="chip" data-s="fantasy art, magical atmosphere, ethereal">فنتازي</div>
+    </div>
+    <div class="lbl">الإعدادات</div>
+    <div class="ctrls">
+      <div class="cg"><label>النموذج</label>
+        <select class="sel" id="model">
+          <option value="core">Stable Image Core ⚡</option>
+          <option value="ultra">Stable Image Ultra ✦</option>
+          <option value="sd3">Stable Diffusion 3.5</option>
+        </select>
+      </div>
+      <div class="cg"><label>نسبة الصورة</label>
+        <select class="sel" id="aspect">
+          <option value="1:1">مربع 1:1</option>
+          <option value="16:9">أفقي 16:9</option>
+          <option value="9:16">عمودي 9:16</option>
+          <option value="4:3">4:3</option>
+          <option value="21:9">سينمائي 21:9</option>
+        </select>
+      </div>
+      <div class="cg"><label>عدد الصور</label>
+        <select class="sel" id="num">
+          <option value="1">1 صورة</option>
+          <option value="2">2 صور</option>
+          <option value="4">4 صور</option>
+        </select>
+      </div>
+      <div class="cg"><label>الصيغة</label>
+        <select class="sel" id="fmt">
+          <option value="png">PNG</option>
+          <option value="jpeg">JPEG</option>
+          <option value="webp">WebP</option>
+        </select>
+      </div>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generate()">
+      <span id="bicon">✦</span><span id="btxt">إنشاء الصورة الآن</span>
+    </button>
+    <div class="err" id="err"></div>
+  </div>
+  <div class="results" id="results">
+    <div class="rh">
+      <div class="rt">✦ الصور المنشأة</div>
+      <button class="clr" onclick="clearR()">مسح الكل</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+<footer>مرسام AI · <strong>Stability AI</strong> · جميع الصور مملوكة لك</footer>
+<script>
+let style='',gen=false;
+document.querySelectorAll('.chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); style=c.dataset.s||'';
+  });
+});
+function useQ(el){document.getElementById('prompt').value=el.textContent;}
+function showErr(m){const e=document.getElementById('err');e.textContent=m;e.classList.add('show');}
+function hideErr(){document.getElementById('err').classList.remove('show');}
+function clearR(){document.getElementById('grid').innerHTML='';document.getElementById('results').classList.remove('show');}
+function openModal(s){document.getElementById('mimg').src=s;document.getElementById('modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+function enhance(){
+  const t=document.getElementById('prompt');
+  if(!t.value.trim())return;
+  const o=[', 8K ultra detailed, masterpiece',', cinematic lighting, highly detailed',', professional quality, stunning',', vivid colors, sharp focus'];
+  t.value=t.value.trim()+o[Math.floor(Math.random()*o.length)];
+}
+async function generate(){
+  if(gen)return; hideErr();
+  const p=document.getElementById('prompt').value.trim();
+  if(!p){showErr('⚠️ أدخل وصف الصورة أولاً');return;}
+  const model=document.getElementById('model').value;
+  const aspect=document.getElementById('aspect').value;
+  const count=parseInt(document.getElementById('num').value);
+  const fmt=document.getElementById('fmt').value;
+  const fp=style?`${p}, ${style}`:p;
+  gen=true;
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;
+  document.getElementById('bicon').innerHTML='<div class="spinner"></div>';
+  document.getElementById('btxt').textContent='جاري الإنشاء...';
+  document.getElementById('results').classList.add('show');
+  const grid=document.getElementById('grid');
+  const ids=[];
+  for(let i=0;i<count;i++){
+    const id='l'+Date.now()+'_'+i; ids.push(id);
+    const lc=document.createElement('div');
+    lc.className='lcard'; lc.id=id;
+    lc.innerHTML=`<div class="shimmer"></div><div class="stext"><div class="spinner" style="border-top-color:var(--accent)"></div><span>ينشئ الصورة ${i+1} من ${count}...</span></div>`;
+    grid.insertBefore(lc,grid.firstChild);
+  }
+  let ok=0;
+  for(let i=0;i<count;i++){
+    try{
+      const fd=new FormData();
+      fd.append('prompt',fp); fd.append('aspect_ratio',aspect);
+      fd.append('output_format',fmt); fd.append('model',model);
+      const r=await fetch('/api/generate',{method:'POST',body:fd});
+      if(!r.ok){let m=`خطأ ${r.status}`;try{const j=await r.json();if(j.error)m=j.error;}catch{}throw new Error(m);}
+      const blob=await r.blob();
+      const url=URL.createObjectURL(blob);
+      const card=document.createElement('div'); card.className='icard';
+      const ml=model==='core'?'Stable Image Core':model==='ultra'?'Stable Image Ultra':'SD 3.5 Turbo';
+      const fn=`marsam_${Date.now()}.${fmt}`;
+      card.innerHTML=`<div class="iwrap"><img src="${url}" alt="" loading="lazy"><div class="iov"><button class="ob" onclick="openModal('${url}')">🔍 تكبير</button><button class="ob dl" onclick="dl('${url}','${fn}')">⬇ تحميل</button></div></div><div class="imeta"><div class="ipt">${fp}</div><div class="ibadge">${ml}</div></div>`;
+      const le=document.getElementById(ids[i]); if(le)le.replaceWith(card); ok++;
+    }catch(e){
+      const le=document.getElementById(ids[i]);
+      if(le)le.innerHTML=`<div style="aspect-ratio:1;background:rgba(252,92,138,0.06);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px;text-align:center"><div style="font-size:2rem">⚠️</div><div style="color:var(--accent2);font-size:0.82rem">${e.message}</div></div>`;
+    }
+  }
+  if(ok===0)showErr('فشل إنشاء الصور. تحقق من الـ API Key في Vercel.');
+  gen=false; btn.disabled=false;
+  document.getElementById('bicon').textContent='✦';
+  document.getElementById('btxt').textContent='إنشاء الصورة الآن';
+}
+function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();if(e.key==='Enter'&&e.ctrlKey)generate();});
+</script>
+</body>
+</html>
+```
+
+اضغط **Commit changes** ✓ وأرسل صورة!
