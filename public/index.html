@@ -92,11 +92,147 @@ footer strong{color:var(--accent)}
 </div>
 <header>
   <div class="logo">م<span>ر</span>سام <span style="color:var(--accent2)">AI</span></div>
-  <div class="powered">✦ Stable Diffusion</div>
+  <div class="powered">✦ FLUX by Hugging Face</div>
 </header>
 <div class="main">
   <div class="hero">
     <h1>حوّل <span class="grad">أفكارك</span><br>إلى صور مذهلة</h1>
+    <p>مدعوم بنموذج FLUX.1 — أحد أقوى نماذج توليد الصور مجاناً</p>
+  </div>
+  <div class="quick-title">✦ أمثلة سريعة</div>
+  <div class="quick-list">
+    <div class="quick-item" onclick="useQ(this)">a beautiful woman in a cafe, photorealistic, 8k</div>
+    <div class="quick-item" onclick="useQ(this)">futuristic city at night, cyberpunk, neon lights</div>
+    <div class="quick-item" onclick="useQ(this)">arabic palace above clouds at sunset, epic</div>
+    <div class="quick-item" onclick="useQ(this)">lion portrait, digital art, highly detailed</div>
+    <div class="quick-item" onclick="useQ(this)">mountain landscape, golden hour, cinematic</div>
+  </div>
+  <div class="box">
+    <div class="lbl">✦ مولّد الصور</div>
+    <div class="prompt-wrap">
+      <textarea id="prompt" placeholder="صف الصورة بالإنجليزي للحصول على أفضل نتيجة... مثال: a stunning sunset over the ocean, photorealistic, 8K" rows="4"></textarea>
+      <div class="p-actions">
+        <button class="p-btn" onclick="enhance()">✨ تحسين</button>
+        <button class="p-btn m" onclick="document.getElementById('prompt').value=''">مسح</button>
+      </div>
+    </div>
+    <div class="lbl">الأسلوب الفني</div>
+    <div class="chips" id="chips">
+      <div class="chip active" data-s="">افتراضي</div>
+      <div class="chip" data-s="photorealistic, DSLR photo, 8k ultra detailed, sharp focus">فوتوغرافي</div>
+      <div class="chip" data-s="digital art, highly detailed, artstation trending">فن رقمي</div>
+      <div class="chip" data-s="cinematic, film grain, dramatic lighting, movie still">سينمائي</div>
+      <div class="chip" data-s="oil painting, fine art, masterpiece, museum quality">لوحة زيتية</div>
+      <div class="chip" data-s="anime style, cel shading, vibrant colors, studio ghibli">أنيمي</div>
+      <div class="chip" data-s="watercolor painting, soft colors, artistic">ألوان مائية</div>
+      <div class="chip" data-s="3d render, octane render, volumetric lighting">ثلاثي الأبعاد</div>
+      <div class="chip" data-s="fantasy art, magical atmosphere, ethereal, epic">فنتازي</div>
+    </div>
+    <div class="lbl">عدد الصور</div>
+    <div class="ctrls" style="grid-template-columns:repeat(4,1fr)">
+      <button class="p-btn active" id="n1" onclick="setNum(1)" style="padding:10px;border-radius:9px;font-size:0.9rem">1</button>
+      <button class="p-btn" id="n2" onclick="setNum(2)" style="padding:10px;border-radius:9px;font-size:0.9rem">2</button>
+      <button class="p-btn" id="n3" onclick="setNum(3)" style="padding:10px;border-radius:9px;font-size:0.9rem">3</button>
+      <button class="p-btn" id="n4" onclick="setNum(4)" style="padding:10px;border-radius:9px;font-size:0.9rem">4</button>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generate()">
+      <span id="bicon">✦</span><span id="btxt">إنشاء الصورة الآن</span>
+    </button>
+    <div class="err" id="err"></div>
+  </div>
+  <div class="results" id="results">
+    <div class="rh">
+      <div class="rt">✦ الصور المنشأة</div>
+      <button class="clr" onclick="clearR()">مسح الكل</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</div>
+<footer>مرسام AI · <strong>FLUX.1 — Hugging Face</strong> · مجاني ولا ينتهي</footer>
+<script>
+let style='',gen=false,num=1;
+document.querySelectorAll('.chip').forEach(c=>{
+  c.addEventListener('click',()=>{
+    document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+    c.classList.add('active'); style=c.dataset.s||'';
+  });
+});
+function setNum(n){
+  num=n;
+  [1,2,3,4].forEach(i=>{
+    const b=document.getElementById('n'+i);
+    b.style.background=i===n?'rgba(124,92,252,0.3)':'rgba(124,92,252,0.12)';
+    b.style.borderColor=i===n?'var(--accent)':'rgba(124,92,252,0.25)';
+    b.style.color=i===n?'var(--text)':'var(--accent)';
+  });
+}
+function useQ(el){document.getElementById('prompt').value=el.textContent;}
+function showErr(m){const e=document.getElementById('err');e.textContent=m;e.classList.add('show');}
+function hideErr(){document.getElementById('err').classList.remove('show');}
+function clearR(){document.getElementById('grid').innerHTML='';document.getElementById('results').classList.remove('show');}
+function openModal(s){document.getElementById('mimg').src=s;document.getElementById('modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('modal').classList.add('hidden');}
+function enhance(){
+  const t=document.getElementById('prompt');
+  if(!t.value.trim())return;
+  const o=[', photorealistic, 8K ultra detailed, masterpiece',', cinematic lighting, highly detailed, sharp focus',', professional photography, stunning, vivid colors',', RAW photo, DSLR, natural lighting, ultra realistic'];
+  t.value=t.value.trim()+o[Math.floor(Math.random()*o.length)];
+}
+async function generate(){
+  if(gen)return; hideErr();
+  const p=document.getElementById('prompt').value.trim();
+  if(!p){showErr('⚠️ أدخل وصف الصورة أولاً');return;}
+  const fp=style?`${p}, ${style}`:p;
+  gen=true;
+  const btn=document.getElementById('genBtn');
+  btn.disabled=true;
+  document.getElementById('bicon').innerHTML='<div class="spinner"></div>';
+  document.getElementById('btxt').textContent='جاري الإنشاء...';
+  document.getElementById('results').classList.add('show');
+  const grid=document.getElementById('grid');
+  const ids=[];
+  for(let i=0;i<num;i++){
+    const id='l'+Date.now()+'_'+i; ids.push(id);
+    const lc=document.createElement('div');
+    lc.className='lcard'; lc.id=id;
+    lc.innerHTML=`<div class="shimmer"></div><div class="stext"><div class="spinner" style="border-top-color:var(--accent)"></div><span>ينشئ الصورة ${i+1} من ${num}... قد يستغرق 20-30 ثانية</span></div>`;
+    grid.insertBefore(lc,grid.firstChild);
+  }
+  let ok=0;
+  for(let i=0;i<num;i++){
+    try{
+      const r=await fetch('/api/generate',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({prompt:fp,negative_prompt:'blurry, bad quality, distorted, ugly, low resolution'})
+      });
+      if(!r.ok){
+        let m=`خطأ ${r.status}`;
+        try{const j=await r.json();if(j.error)m=j.error;}catch{}
+        throw new Error(m);
+      }
+      const blob=await r.blob();
+      const url=URL.createObjectURL(blob);
+      const card=document.createElement('div'); card.className='icard';
+      const fn=`marsam_${Date.now()}.jpg`;
+      card.innerHTML=`<div class="iwrap"><img src="${url}" alt="" loading="lazy"><div class="iov"><button class="ob" onclick="openModal('${url}')">🔍 تكبير</button><button class="ob dl" onclick="dl('${url}','${fn}')">⬇ تحميل</button></div></div><div class="imeta"><div class="ipt">${fp}</div><div class="ibadge">FLUX.1-dev</div></div>`;
+      const le=document.getElementById(ids[i]); if(le)le.replaceWith(card); ok++;
+    }catch(e){
+      const le=document.getElementById(ids[i]);
+      if(le)le.innerHTML=`<div style="aspect-ratio:1;background:rgba(252,92,138,0.06);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;padding:20px;text-align:center"><div style="font-size:2rem">⚠️</div><div style="color:var(--accent2);font-size:0.82rem">${e.message}</div></div>`;
+    }
+  }
+  if(ok===0)showErr('فشل إنشاء الصور. إذا كان الخطأ 503 انتظر 30 ثانية وحاول مجدداً.');
+  gen=false; btn.disabled=false;
+  document.getElementById('bicon').textContent='✦';
+  document.getElementById('btxt').textContent='إنشاء الصورة الآن';
+}
+function dl(url,name){const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+setNum(1);
+</script>
+</body>
+</html>    <h1>حوّل <span class="grad">أفكارك</span><br>إلى صور مذهلة</h1>
     <p>اكتب وصف ما تتخيله وسيحوله Stability AI إلى صورة احترافية</p>
   </div>
   <div class="quick-title">✦ أمثلة سريعة</div>
